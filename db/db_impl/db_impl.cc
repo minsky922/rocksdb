@@ -287,7 +287,7 @@ DBImpl::DBImpl(const DBOptions& options, const std::string& dbname,
       "open :: reset scheme ::\noptions.reset_scheme: "
       "%d\ninitial_db_options_.reset_scheme: "
       "%d\ninitial_db_options_.reset_at_foreground: "
-      "%d\ninitial_db_options_.tuning_point: %llu\n",
+      "%d\ninitial_db_options_.tuning_point: %lu\n",
       options.reset_scheme, initial_db_options_.reset_scheme,
       initial_db_options_.reset_at_foreground,
       initial_db_options_.tuning_point);
