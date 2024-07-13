@@ -378,6 +378,13 @@ class FileSystem : public Customizable {
     return IOStatus::NotSupported("ReopenWritableFile");
   }
 
+// virtual void ZoneCleaningWorker(bool) {}
+  // virtual size_t ZoneCleaning(bool) { return 0; }
+  // virtual bool IsZCRunning(void) { return false; }
+  // virtual int GetMountTime(void) { return -1; }
+  virtual void ZCLock(void) {}
+  virtual void ZCUnLock(void) {}
+
   // Reuse an existing file by renaming it and opening it as writable.
   virtual IOStatus ReuseWritableFile(const std::string& fname,
                                      const std::string& old_fname,
@@ -1365,6 +1372,24 @@ class FileSystemWrapper : public FileSystem {
       std::unique_ptr<MemoryMappedFileBuffer>* result) override {
     return target_->NewMemoryMappedFileBuffer(fname, result);
   }
+ ///
+  // void SetDBPtr(DB* ptr) { target_->SetDBPtr(ptr); }
+  // bool IsZoneDevice(void) { return target_->IsZoneDevice(); }
+  // bool PreserveZoneSpace(uint64_t approx_size) {
+  // return target_->PreserveZoneSpace(approx_size);
+  // }
+  // void WriteStallCheckPoint(int write_stall_cause, int write_stall_cond) {
+  // target_->WriteStallCheckPoint(write_stall_cause, write_stall_cond);
+  // }
+  // void ZoneCleaningWorker(bool run_once) {
+  // target_->ZoneCleaningWorker(run_once);
+  // }
+  // size_t ZoneCleaning(bool forced) { return target_->ZoneCleaning(forced); }
+  // int GetMountTime(void) { return target_->GetMountTime(); }
+  // bool IsZCRunning(void) { return target_->IsZCRunning(); }
+  void ZCLock(void) { target_->ZCLock(); }
+  void ZCUnLock(void) { target_->ZCUnLock(); }
+  ///
   IOStatus NewDirectory(const std::string& name, const IOOptions& io_opts,
                         std::unique_ptr<FSDirectory>* result,
                         IODebugContext* dbg) override {
