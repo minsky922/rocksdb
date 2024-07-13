@@ -278,6 +278,18 @@ DBImpl::DBImpl(const DBOptions& options, const std::string& dbname,
   if (write_buffer_manager_) {
     wbm_stall_.reset(new WBMStallInterface());
   }
+
+  printf("open :: reset scheme :: %d %d\n", options.reset_scheme,
+         initial_db_options_.reset_scheme);
+  printf("reclaim until %lu~%lu\n", options.zc, options.until);
+  // fs_->reset_scheme_= initial_db_options_.reset_scheme;
+  fs_->SetResetScheme(initial_db_options_.reset_scheme,
+                      initial_db_options_.reset_at_foreground,
+                      initial_db_options_.tuning_point);
+  // fs_->SetResetScheme(initial_db_options_.reset_scheme,
+  //                     initial_db_options_.partial_reset_scheme,
+  //                     initial_db_options_.tuning_point,
+  //                     initial_db_options_.zc, initial_db_options_.until);
 }
 
 Status DBImpl::Resume() {
@@ -1270,7 +1282,7 @@ Status DBImpl::SetDBOptions(
       file_options_for_compaction_ = fs_->OptimizeForCompactionTableWrite(
           file_options_for_compaction_, immutable_db_options_);
       versions_->ChangeFileOptions(mutable_db_options_);
-      //TODO(xiez): clarify why apply optimize for read to write options
+      // TODO(xiez): clarify why apply optimize for read to write options
       file_options_for_compaction_ = fs_->OptimizeForCompactionTableRead(
           file_options_for_compaction_, immutable_db_options_);
       file_options_for_compaction_.compaction_readahead_size =
@@ -1722,7 +1734,7 @@ InternalIterator* DBImpl::NewInternalIterator(const ReadOptions& read_options,
     IterState* cleanup =
         new IterState(this, &mutex_, super_version,
                       read_options.background_purge_on_iterator_cleanup ||
-                      immutable_db_options_.avoid_unnecessary_blocking_io);
+                          immutable_db_options_.avoid_unnecessary_blocking_io);
     internal_iter->RegisterCleanup(CleanupIteratorState, cleanup, nullptr);
 
     return internal_iter;
@@ -2090,8 +2102,8 @@ std::vector<Status> DBImpl::MultiGet(
     std::string* timestamp = timestamps ? &(*timestamps)[keys_read] : nullptr;
 
     LookupKey lkey(keys[keys_read], consistent_seqnum, read_options.timestamp);
-    auto cfh =
-        static_cast_with_check<ColumnFamilyHandleImpl>(column_family[keys_read]);
+    auto cfh = static_cast_with_check<ColumnFamilyHandleImpl>(
+        column_family[keys_read]);
     SequenceNumber max_covering_tombstone_seq = 0;
     auto mgd_iter = multiget_cf_data.find(cfh->cfd()->GetID());
     assert(mgd_iter != multiget_cf_data.end());
@@ -3703,8 +3715,7 @@ SuperVersion* DBImpl::GetAndRefSuperVersion(uint32_t column_family_id) {
 void DBImpl::CleanupSuperVersion(SuperVersion* sv) {
   // Release SuperVersion
   if (sv->Unref()) {
-    bool defer_purge =
-            immutable_db_options().avoid_unnecessary_blocking_io;
+    bool defer_purge = immutable_db_options().avoid_unnecessary_blocking_io;
     {
       InstrumentedMutexLock l(&mutex_);
       sv->Cleanup();
@@ -5364,8 +5375,7 @@ Status DBImpl::VerifyChecksumInternal(const ReadOptions& read_options,
     }
   }
 
-  bool defer_purge =
-          immutable_db_options().avoid_unnecessary_blocking_io;
+  bool defer_purge = immutable_db_options().avoid_unnecessary_blocking_io;
   {
     InstrumentedMutexLock l(&mutex_);
     for (auto sv : sv_list) {

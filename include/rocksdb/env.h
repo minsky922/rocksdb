@@ -382,6 +382,9 @@ class Env : public Customizable {
   // Store the size of fname in *file_size.
   virtual Status GetFileSize(const std::string& fname, uint64_t* file_size) = 0;
 
+  //
+  virtual void SetResetScheme(uint32_t, bool, uint64_t) {}
+
   // Store the last modification time of fname in *file_mtime.
   virtual Status GetFileModificationTime(const std::string& fname,
                                          uint64_t* file_mtime) = 0;
@@ -1477,6 +1480,9 @@ class EnvWrapper : public Env {
   }
   Status GetFileSize(const std::string& f, uint64_t* s) override {
     return target_.env->GetFileSize(f, s);
+  }
+  void SetResetScheme(uint32_t r, bool f, uint64_t T) override {
+    target_.env->SetResetScheme(r, f, T);
   }
 
   Status GetFileModificationTime(const std::string& fname,
